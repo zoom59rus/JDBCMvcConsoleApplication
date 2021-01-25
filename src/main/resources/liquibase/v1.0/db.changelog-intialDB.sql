@@ -3,7 +3,7 @@
 
 CREATE TABLE regions
 (
-    id   INT         NOT NULL AUTO_INCREMENT UNIQUE,
+    id   BIGINT         NOT NULL AUTO_INCREMENT UNIQUE,
     name varchar(50) NOT NULL UNIQUE,
     PRIMARY KEY (id)
 );
@@ -11,7 +11,7 @@ CREATE TABLE regions
 CREATE TABLE writers
 (
     id         BIGINT      NOT NULL AUTO_INCREMENT UNIQUE,
-    regions_id INT,
+    regions_id BIGINT,
     firstName  varchar(50) NOT NULL,
     lastName   varchar(50) NOT NULL,
     PRIMARY KEY (id),
