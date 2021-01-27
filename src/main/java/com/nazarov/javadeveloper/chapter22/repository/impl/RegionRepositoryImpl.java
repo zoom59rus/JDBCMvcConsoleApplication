@@ -17,7 +17,7 @@ public class RegionRepositoryImpl implements RegionRepository {
     }
 
     public Region save(Region entity) {
-        String sqlQuery = String.format("INSERT INTO regions VALUES(null, '%s')", entity.getName());
+        String sqlQuery = String.format("INSERT regions VALUES(null, '%s')", entity.getName());
 
         try (PreparedStatement stmt = conn.prepareStatement(sqlQuery, Statement.RETURN_GENERATED_KEYS)) {
             stmt.executeUpdate();

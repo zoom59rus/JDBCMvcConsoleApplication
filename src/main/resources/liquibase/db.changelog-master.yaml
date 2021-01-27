@@ -1,3 +1,4 @@
 databaseChangeLog:
   - include:
-      file: src/main/resources/liquibase/v1.0/db.changelog-intialDB.sql
+      file: v1.0/db.changelog-v1.0-cumulative.yaml
+      relativeToChangelogFile: true
