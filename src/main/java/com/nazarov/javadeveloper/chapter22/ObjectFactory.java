@@ -11,7 +11,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 public final class ObjectFactory {
-    private final Logger log = LoggerFactory.getLogger("slf4j");
+    private final Logger log = LoggerFactory.getLogger("ObjectFactory");
     private static ObjectFactory INSTANCE = null;
     private final Properties props;
 
@@ -43,10 +43,10 @@ public final class ObjectFactory {
         try {
             conn = DriverManager.getConnection(props.getProperty("url"), props.getProperty("username"), props.getProperty("password"));
         } catch (SQLException e) {
-            log.warn("IN - ObjectFactory(getConnection) - Ошибка создания экземпляра Connection.");
+            log.warn("IN - getConnection - Ошибка создания экземпляра Connection.");
             e.printStackTrace();
         }
-        log.info("IN - ObjectFactory(getConnection) - Объект Connection успешно создан.");
+        log.info("IN - getConnection - Объект Connection успешно создан.");
 
         return conn;
     }
