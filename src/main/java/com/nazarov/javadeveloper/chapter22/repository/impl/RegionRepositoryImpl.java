@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 
 public class RegionRepositoryImpl implements RegionRepository {
-    private final Logger log = LoggerFactory.getLogger("slf4j");
+    private final Logger log = LoggerFactory.getLogger("RegionRepositoryImpl");
     private final Connection conn;
 
     public RegionRepositoryImpl() {
@@ -18,22 +18,24 @@ public class RegionRepositoryImpl implements RegionRepository {
 
     public Region save(Region entity) {
         String sqlQuery = String.format("INSERT regions VALUES(null, '%s')", entity.getName());
+        Region region = get(entity.getName());
+        if(region != null){
+            return region;
+        }
 
         try (PreparedStatement stmt = conn.prepareStatement(sqlQuery, Statement.RETURN_GENERATED_KEYS)) {
             stmt.executeUpdate();
             try (ResultSet rs = stmt.getGeneratedKeys()) {
                 if (rs.next()) {
                     entity.setId(rs.getLong(1));
-                    log.info("IN - RegionRepository(save) - Добавлена новая запись " + entity);
+                    log.info("IN - save - Добавлена новая запись " + entity);
                 } else throw new SQLException("Сохранение прошло успешно, но не удалось получить id для записи " + entity);
             }
-
-            return entity;
         } catch (SQLException e) {
-            log.warn("IN - RegionRepository(save) - " + e.getMessage());
+            log.warn("IN - save - " + e.getMessage());
         }
 
-        return null;
+        return entity;
     }
 
     public Region get(Long id) {
@@ -52,6 +54,23 @@ public class RegionRepositoryImpl implements RegionRepository {
         }
 
         return find;
+    }
+
+    public Region get(String name){
+        String sqlQuery = String.format("Select * From regions Where name='%s'", name);
+        try(Statement st = conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            ResultSet rs = st.executeQuery(sqlQuery);
+        ){
+            if(rs.next()){
+                Region region = new Region(rs.getLong("id"),
+                                            rs.getString("name"));
+                return region;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     @Override

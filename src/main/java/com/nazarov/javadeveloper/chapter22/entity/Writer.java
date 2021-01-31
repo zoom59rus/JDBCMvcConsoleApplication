@@ -7,13 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Region {
-
+public class Writer {
     private Long id;
-    private String name;
-
-    public Region(String name) {
-        this.id = null;
-        this.name = name;
-    }
+    private Long regions_id;
+    private String firstName;
+    private String lastName;
 }
