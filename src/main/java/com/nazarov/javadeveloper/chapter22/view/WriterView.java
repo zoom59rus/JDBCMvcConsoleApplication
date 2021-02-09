@@ -1,9 +1,11 @@
 package com.nazarov.javadeveloper.chapter22.view;
 
+import com.nazarov.javadeveloper.chapter22.controllers.UserController;
 import com.nazarov.javadeveloper.chapter22.controllers.WriterController;
 import com.nazarov.javadeveloper.chapter22.entity.Post;
 import com.nazarov.javadeveloper.chapter22.entity.Region;
 import com.nazarov.javadeveloper.chapter22.entity.Writer;
+import com.nazarov.javadeveloper.chapter22.entity.dtos.WriterDto;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +15,7 @@ public class WriterView {
     private final WriterController writerController;
     private final PostView postView;
     private final RegionView regionView;
+    private final UserController userController;
 
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_RED = "\u001B[31m";
@@ -22,6 +25,7 @@ public class WriterView {
         this.writerController = new WriterController();
         this.postView = new PostView();
         this.regionView = new RegionView();
+        this.userController = new UserController();
     }
 
     public void createUserDialog() {
@@ -30,11 +34,12 @@ public class WriterView {
         System.out.print("Введите имя пользователя: ");
         String firstName = matchName();
 
-        System.out.print("Введите фамилию: ");
+        System.out.print("Введите фамилию пользователя: ");
         String lastName = matchName();
 
-        Region region = regionView.save();
-        Writer writer = new Writer(null, region.getId(), firstName, lastName);
+        Region region = regionView.createRegionDialog();
+        List<Post> posts = postView.createPostDialog(null);
+        WriterDto writer = new WriterDto(null, firstName, lastName, posts, region);
 
         System.out.println("Создан пользователь:");
         printWriter(writer);
@@ -42,7 +47,7 @@ public class WriterView {
 
         String i = sc.nextLine();
         if ("y".equals(i.toLowerCase())) {
-            writer = writerController.save(writer);
+            writer = userController.save(writer);
             if (writer != null) {
                 System.out.println(ANSI_GREEN + "Пользователь сохранен." + ANSI_RESET);
             } else {
@@ -96,15 +101,15 @@ public class WriterView {
     }
 
     public void removeUserDialog() {
-        System.out.print("Введите имя пользователя для удаления: ");
+        System.out.print("Введите id пользователя для удаления: ");
         Scanner sc = new Scanner(System.in);
-        String firstName = matchName();
-        Writer writer = writerController.getByFirstName(firstName);
+        Long id = sc.nextLong();
+        WriterDto writer = userController.get(id);
         printWriter(writer);
         System.out.print(ANSI_RED + "Пользователь будет удален, подтвердите (Y/N): " + ANSI_RESET);
         String input = sc.next();
         if ("y".equals(input.toLowerCase())) {
-            writerController.remove(writer);
+            userController.remove(id);
             if (writerController.get(writer.getId()) == null) {
                 System.out.println(ANSI_GREEN + "Пользователь удален." + ANSI_RESET);
             } else System.err.println("Невозможно удалить пользователя \"" +
@@ -112,56 +117,58 @@ public class WriterView {
                     "\"" + ", или пользователь не существует.");
         }
     }
-
+//
     public void updateUserDialog() {
-        System.out.print("Введите имя пользователя для редактирования: ");
-        String firstName = matchName();
+        System.out.print("Введите id пользователя для редактирования: ");
+        Scanner sc = new Scanner(System.in);
+        Long id = sc.nextLong();
 
-        Writer writer = writerController.getByFirstName(firstName);
+        WriterDto writer = userController.get(id);
         if (writer == null) {
-            System.out.println(ANSI_GREEN + "Пользователь с именем:" + firstName + " не найден." + ANSI_RESET);
+            System.out.println(ANSI_GREEN + "Пользователь c id: " + id + " не найден." + ANSI_RESET);
             return;
         }
 
         System.out.println("Редактируемый пользователь:");
         printWriter(writer);
 
-        Scanner sc = new Scanner(System.in);
         System.out.println("Ведите новые записи или нажмите Enter для пропуска:");
         System.out.print("Введите имя: ");
         String input = sc.nextLine();
-        if(!input.equals("")){
+        if (!input.equals("")) {
             writer.setFirstName(input);
         }
         System.out.print("Введите фамилию: ");
         input = sc.nextLine();
-        if(!input.equals("")){
+        if (!input.equals("")) {
             writer.setLastName(input);
         }
         System.out.print("Введите регион: ");
         input = sc.nextLine();
-        Region region = regionView.getRegion(input);
-        if(!input.equals("")){
-            writer.setRegions_id(region.getId());
-        }
+        Region region = new Region(input);
+
         System.out.println("Отредактируйте публикации, или нажмите Enter для пропуска: ");
         List<Post> postList = new ArrayList<>();
+
         for (Post post : postView.getAll(writer.getId())) {
             System.out.println(ANSI_GREEN + post.getContent() + ANSI_RESET);
             System.out.print("Новая запись: ");
             String content = sc.nextLine();
-            if(!content.equals("")){
-                postList.add(new Post(writer.getId(), content));
-            }else postList.add(post);
+            if (!content.equals("")) {
+                post.setContent(content);
+                postList.add(post);
+            } else postList.add(post);
 
         }
         printWriter(writer);
-        System.out.print("Сохранить изменения пользователя? Y/N: ");
+        System.out.print(ANSI_RED + "Сохранить изменения пользователя? Y/N: " + ANSI_RESET);
         String s = sc.next();
         if ("y".equals(s.toLowerCase())) {
-            writerController.update(writer);
+            writer.setRegion(region);
+            writer.setPosts(postList);
+            userController.update(writer);
             System.out.println(ANSI_GREEN + "Пользователь сохранен." + ANSI_RESET);
-        }else System.out.println("Обновление отменено пользователем.");
+        } else System.out.println("Обновление отменено пользователем.");
     }
 
     private String matchName() {
@@ -176,25 +183,15 @@ public class WriterView {
         return firstName;
     }
 
-    private void printUser(String firstName, String lastName, List<String> contents, String region) {
-        StringBuilder sb = new StringBuilder();
-        int count = 1;
-        sb
-                .append("Имя: " + "\"" + firstName + "\"" + "\n")
-                .append("Фамилия: " + "\"" + lastName + "\"" + "\n")
-                .append("Публикация(и):\n");
-        for (String content : contents) {
-            sb.append("\t\t" + (count++) + ". " + "\"" + content + "\"" + "\n");
-        }
-        sb.append("Регион пользователя: " + "\"" + region + "\"");
-        System.out.println(ANSI_GREEN + sb.toString() + ANSI_RESET);
-    }
-
-    private void printWriter(Writer writer) {
+    private void printWriter(WriterDto writer) {
         StringBuilder sb = new StringBuilder();
         sb
+                .append("id: " + "\"" + writer.getId() + "\"" + "\n")
                 .append("Имя: " + "\"" + writer.getFirstName() + "\"" + "\n")
-                .append("Фамилия: " + "\"" + writer.getLastName() + "\"" + "\n");
+                .append("Фамилия: " + "\"" + writer.getLastName() + "\"" + "\n")
+                .append("Регион: " + "\"" + writer.getRegion().getName() + "\"" + "\n")
+                .append("Публикации: \n")
+                .append(postView.toString(writer.getPosts()));
 
         System.out.println(ANSI_GREEN + sb.toString() + ANSI_RESET);
     }

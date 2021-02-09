@@ -64,7 +64,7 @@ public class PostView {
         System.out.println("Введите id создателя.");
         Long writersId = sc.nextLong();
         System.out.print("Введите публикацию: ");
-        List<Post> posts = createPostDialog(sc, writersId);
+        List<Post> posts = createPostDialog(writersId);
         posts = posts.stream()
                 .peek(postController::save)
                 .collect(Collectors.toList());
@@ -73,7 +73,8 @@ public class PostView {
         sc.close();
     }
 
-    public List<Post> createPostDialog(Scanner sc, Long writerId) {
+    public List<Post> createPostDialog(Long writerId) {
+        Scanner sc = new Scanner(System.in);
         List<Post> posts = new ArrayList<>();
 
         System.out.println("Введите публикацию(и), или Enter для завершения ввода: ");

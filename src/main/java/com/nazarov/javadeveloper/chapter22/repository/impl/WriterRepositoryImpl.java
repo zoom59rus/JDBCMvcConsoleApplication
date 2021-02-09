@@ -72,7 +72,7 @@ public class WriterRepositoryImpl implements WriterRepository {
 
     @Override
     public Writer update(Writer writer) {
-        String sqlQuery = String.format("Update writers Set regions_id='%d', first_name='%s', last_name='%s' Where id='%d'",
+        String sqlQuery = String.format("Update writers Set regions_id=%d, first_name='%s', last_name='%s' Where id=%d",
                 writer.getRegions_id(), writer.getFirstName(), writer.getLastName(), writer.getId());
         try (Statement st = conn.createStatement()) {
             int affected = st.executeUpdate(sqlQuery);

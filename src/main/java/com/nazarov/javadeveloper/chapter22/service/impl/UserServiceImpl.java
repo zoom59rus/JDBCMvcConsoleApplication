@@ -29,25 +29,41 @@ public class UserServiceImpl implements UserService {
     @Override
     public WriterDto save(WriterDto writerDto) {
         Writer writer = new Writer();
-        Region region = new Region(writerDto.getRegion());
+        Region region = writerDto.getRegion();
+        List<Post> posts = writerDto.getPosts();
+
         region = regionRepository.save(region);
 
         writer.setRegions_id(region.getId());
         writer.setFirstName(writerDto.getFirstName());
         writer.setLastName(writerDto.getLastName());
-        writerRepository.save(writer);
+        writer = writerRepository.save(writer);
+        Long writerId = writer.getId();
 
-        writerDto.getPosts().stream()
-                .map(p -> new Post(writer.getId(), p))
+        posts = posts.stream()
+                .peek(p -> p.setWritersId(writerId))
                 .map(postRepository::save)
                 .collect(Collectors.toList());
 
+        writerDto.setId(writer.getId());
         return writerDto;
     }
 
     @Override
     public WriterDto update(WriterDto writerDto) {
-        return null;
+        Writer writer = writerRepository.get(writerDto.getId());
+        Region region = regionRepository.get(writerDto.getRegion().getName());
+        if(region == null){
+            region = writerDto.getRegion();
+            regionRepository.save(region);
+        } else regionRepository.update(region);
+        writer.setFirstName(writerDto.getFirstName());
+        writer.setLastName(writerDto.getLastName());
+        writer.setRegions_id(region.getId());
+        writerRepository.save(writer);
+        List<Post> posts = writerDto.getPosts().stream().peek(p -> postRepository.update(p)).collect(Collectors.toList());
+
+        return writerDto;
     }
 
     @Override
@@ -57,11 +73,9 @@ public class UserServiceImpl implements UserService {
             return null;
         }
         Region region = regionRepository.get(writer.getRegions_id());
-        List<String> posts = postRepository.getAllByWriterId(writer.getId()).stream()
-                .map(Post::getContent)
-                .collect(Collectors.toList());
+        List<Post> posts = postRepository.getAllByWriterId(writer.getId());
 
-        return WriterDto.fromWriter(writer, posts, region.getName());
+        return WriterDto.fromWriter(writer, posts, region);
     }
 
     public WriterDto getByFirstName(String firstName) {
@@ -70,11 +84,9 @@ public class UserServiceImpl implements UserService {
             return null;
         } else {
             Region region = regionRepository.get(writer.getRegions_id());
-            List<String> posts = postRepository.getAllByWriterId(writer.getId()).stream()
-                    .map(Post::getContent)
-                    .collect(Collectors.toList());
+            List<Post> posts = postRepository.getAllByWriterId(writer.getId());
 
-            return WriterDto.fromWriter(writer, posts, region.getName());
+            return WriterDto.fromWriter(writer, posts, region);
         }
     }
 
@@ -84,16 +96,20 @@ public class UserServiceImpl implements UserService {
             return null;
         } else {
             Region region = regionRepository.get(writer.getRegions_id());
-            List<String> posts = postRepository.getAllByWriterId(writer.getId()).stream()
-                    .map(Post::getContent)
-                    .collect(Collectors.toList());
+            List<Post> posts = postRepository.getAllByWriterId(writer.getId());
 
-            return WriterDto.fromWriter(writer, posts, region.getName());
+            return WriterDto.fromWriter(writer, posts, region);
         }
     }
 
     @Override
     public void remove(Long id) {
+        Writer writer = writerRepository.get(id);
+        List<Post> posts = postRepository.getAllByWriterId(writer.getId());
+        posts = posts.stream()
+                .peek(p -> postRepository.remove(p.getId()))
+                .collect(Collectors.toList());
+
         writerRepository.remove(id);
     }
 }

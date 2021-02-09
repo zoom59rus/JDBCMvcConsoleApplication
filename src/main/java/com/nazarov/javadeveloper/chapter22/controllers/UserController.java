@@ -16,7 +16,7 @@ public class UserController {
     }
 
     public WriterDto update(WriterDto writerDto){
-        return null;
+        return userService.update(writerDto);
     }
 
     public WriterDto get(Long id){

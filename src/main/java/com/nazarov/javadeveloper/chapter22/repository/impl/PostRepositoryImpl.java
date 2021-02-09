@@ -92,7 +92,7 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     public Post update(Post post) {
-        String sqlQuery = String.format("UPDATE `posts` SET content='%s' WHERE id=%d", post.getContent(), post.getId());
+        String sqlQuery = String.format("Update posts SET content='%s' Where id=%d", post.getContent(), post.getId());
         try(Statement st = conn.createStatement()){
             int row = st.executeUpdate(sqlQuery);
             if(row == 0){
