@@ -66,7 +66,7 @@ public class WriterRepositoryImpl implements WriterRepository {
 
     @Override
     public Writer getByRegion(Long regionId) {
-        String sqlQuery = String.format("Select * From writers Where regions_id=$d", regionId);
+        String sqlQuery = String.format("Select * From writers Where regions_id=%d", regionId);
         return executeQuery(sqlQuery);
     }
 

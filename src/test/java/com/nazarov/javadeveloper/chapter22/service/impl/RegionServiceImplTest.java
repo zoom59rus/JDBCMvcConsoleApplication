@@ -1,92 +1,81 @@
 package com.nazarov.javadeveloper.chapter22.service.impl;
 
 import com.nazarov.javadeveloper.chapter22.entity.Region;
-import com.nazarov.javadeveloper.chapter22.repository.RegionRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 class RegionServiceImplTest {
 
-    @Mock
-    private RegionRepository regionRepository;
+    @Spy
+    @InjectMocks
+    private RegionServiceImpl regionService;
 
-    @Test
-    void getById() {
-        Mockito.when(regionRepository.get(1L)).thenReturn(new Region(1L, "Test region"));
-        Region region = regionRepository.get(1L);
-
-        assertEquals(1L, region.getId());
-        assertEquals("Test region", region.getName());
-        Mockito.verify(regionRepository).get(Mockito.anyLong());
-        Mockito.verifyNoMoreInteractions(regionRepository);
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void getByName() {
-        Mockito.when(regionRepository.get("test")).thenReturn(new Region(2L, "test"));
-        Region region = regionRepository.get("test");
+    void get_by_id() {
+        Region region = regionService.get(2L);
 
+        assertNotNull(region);
         assertEquals(2L, region.getId());
-        assertEquals("test", region.getName());
-        Mockito.verify(regionRepository).get(Mockito.anyString());
-        Mockito.verifyNoMoreInteractions(regionRepository);
+        Mockito.verify(regionService, Mockito.times(1)).get(Mockito.anyLong());
     }
 
     @Test
-    void update() {
-        List<Region> regions = new ArrayList<>();
-        regions.add(new Region(1L, "One"));
-        regions.add(new Region(2L, "Two"));
-        regions.add(new Region(3L, "Three"));
-        regions.add(new Region(4L, "Fore"));
+    void get_by_name() {
+        Region region = regionService.get("Permsky kray");
 
-        Mockito.when(regionRepository.update(Mockito.any(Region.class))).thenAnswer(i -> {
-            Region region = (Region) i.getArguments()[0];
-            if(regions.contains(region)){
-                Region find = regions.stream()
-                        .filter(r -> r.getId().equals(region.getId()))
-                        .findFirst().get();
-                regions.remove(find);
-                regions.add(region);
-            }
-            return region;
-        });
-
-        Region containsRegion = new Region(2L, "Two");
-        Region testUpdateRegion = regionRepository.update(new Region(2L, "Ten"));
-
-
-        assertEquals(containsRegion.getId(), testUpdateRegion.getId());
-        assertNotEquals(containsRegion.getName(), testUpdateRegion.getName());
-        Mockito.verify(regionRepository, Mockito.times(1)).update(testUpdateRegion);
+        assertNotNull(region);
+        assertNotNull(region.getId());
+        assertEquals("Permsky kray", region.getName());
+        Mockito.verify(regionService, Mockito.times(1)).get(Mockito.anyString());
     }
 
     @Test
-    void save() {
-        Mockito.when(regionRepository.save(Mockito.any(Region.class))).thenReturn(new Region(33L, "Saved"));
-        Region region = regionRepository.save(new Region(null, "Saved"));
+    void update_some_region() {
+        Region updatableRegion = regionService.get(4L);
+        String oldName = updatableRegion.getName();
+        String newName = "Alaska";
+        updatableRegion.setName(newName);
+        updatableRegion = regionService.update(updatableRegion);
 
-        assertEquals(33L, region.getId());
-        assertEquals("Saved", region.getName());
-        Mockito.verify(regionRepository, Mockito.times(1)).save(Mockito.any(Region.class));
+        assertNotNull(updatableRegion);
+        assertEquals(4L, updatableRegion.getId());
+        assertEquals("Alaska", updatableRegion.getName());
+        Mockito.verify(regionService, Mockito.times(1)).update(Mockito.any(Region.class));
+
+        updatableRegion.setName(oldName);
+        regionService.update(updatableRegion);
+        Mockito.verify(regionService, Mockito.times(2)).update(Mockito.any(Region.class));
 
     }
 
     @Test
-    void remove() {
-        regionRepository.remove(1L);
-        Mockito.verify(regionRepository, Mockito.times(1)).remove(Mockito.anyLong());
-        Mockito.verifyNoMoreInteractions(regionRepository);
+    void save_some_region() {
+        Region saveRegion = new Region(null, "ViceCity");
+        saveRegion = regionService.save(saveRegion);
+
+        assertNotNull(saveRegion.getId());
+        assertEquals("ViceCity", saveRegion.getName());
+        Mockito.verify(regionService, Mockito.times(1)).save(Mockito.any(Region.class));
+    }
+
+    @Test
+    void remove_some_region() {
+        Region removeRegion = new Region(11L, "ViceCity");
+        regionService.remove(removeRegion);
+        Region find = regionService.get(11L);
+
+        assertNull(find);
+        Mockito.verify(regionService, Mockito.times(1)).remove(Mockito.any(Region.class));
     }
 }

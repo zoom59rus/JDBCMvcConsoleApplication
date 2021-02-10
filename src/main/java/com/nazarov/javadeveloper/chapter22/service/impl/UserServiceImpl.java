@@ -60,7 +60,7 @@ public class UserServiceImpl implements UserService {
         writer.setFirstName(writerDto.getFirstName());
         writer.setLastName(writerDto.getLastName());
         writer.setRegions_id(region.getId());
-        writerRepository.save(writer);
+        writerRepository.update(writer);
         List<Post> posts = writerDto.getPosts().stream().peek(p -> postRepository.update(p)).collect(Collectors.toList());
 
         return writerDto;
