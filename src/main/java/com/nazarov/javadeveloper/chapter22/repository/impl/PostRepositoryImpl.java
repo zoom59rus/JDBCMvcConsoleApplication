@@ -2,8 +2,8 @@ package com.nazarov.javadeveloper.chapter22.repository.impl;
 
 import com.nazarov.javadeveloper.chapter22.ObjectFactory;
 import com.nazarov.javadeveloper.chapter22.entity.Post;
+import com.nazarov.javadeveloper.chapter22.repository.DBUtils;
 import com.nazarov.javadeveloper.chapter22.repository.PostRepository;
-import com.nazarov.javadeveloper.chapter22.service.queries.PostQueries;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +23,7 @@ public class PostRepositoryImpl implements PostRepository {
                         .getConnection()
                         .createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)
         ) {
-            int row = st.executeUpdate(String.format(PostQueries.SAVE, entity.getWritersId(), entity.getContent()), Statement.RETURN_GENERATED_KEYS);
+            int row = st.executeUpdate(String.format(DBUtils.SAVE_POST, entity.getWritersId(), entity.getContent()), Statement.RETURN_GENERATED_KEYS);
             if (row == 0) {
                 log.warn("IN save - Запись " + entity + " не сохранена.");
                 return null;
@@ -51,7 +51,7 @@ public class PostRepositoryImpl implements PostRepository {
                         .getConnection()
                         .createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)
         ) {
-            st.executeQuery(String.format(PostQueries.GET_BY_ID, id));
+            st.executeQuery(String.format(DBUtils.GET_POST_BY_ID, id));
             try (ResultSet rs = st.getResultSet()) {
                 while (rs.next()) {
 
@@ -78,7 +78,7 @@ public class PostRepositoryImpl implements PostRepository {
                         .getConnection()
                         .createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)
         ) {
-            st.executeQuery(String.format(PostQueries.GET_BY_NAME, content));
+            st.executeQuery(String.format(DBUtils.GET_POST_BY_CONTENT, content));
             try (ResultSet rs = st.getResultSet()) {
                 while (rs.next()) {
 
@@ -102,7 +102,7 @@ public class PostRepositoryImpl implements PostRepository {
         try (
                 Statement st = ObjectFactory.getInstance().getStatement()
         ) {
-            int row = st.executeUpdate(String.format(PostQueries.UPDATE, post.getContent(), post.getId()));
+            int row = st.executeUpdate(String.format(DBUtils.UPDATE_POST, post.getContent(), post.getId()));
             if (row == 0) {
                 log.warn("IN update - Не удалось обновить запись  " + post + ".");
                 return null;
@@ -125,7 +125,7 @@ public class PostRepositoryImpl implements PostRepository {
                         .getConnection()
                         .createStatement()
         ) {
-            int row = st.executeUpdate(String.format(PostQueries.DELETE, id));
+            int row = st.executeUpdate(String.format(DBUtils.DELETE_POST, id));
             if (row == 0) {
                 log.warn("IN remove - Запись с id" + id + " не удалена.");
             }
@@ -143,7 +143,7 @@ public class PostRepositoryImpl implements PostRepository {
                 Statement st = ObjectFactory.getInstance()
                         .getConnection()
                         .createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-                ResultSet rs = st.executeQuery(String.format(PostQueries.GET_ALL_BY_WRITER_ID, writerId));
+                ResultSet rs = st.executeQuery(String.format(DBUtils.GET_ALL_POST_BY_WRITER_ID, writerId));
         ) {
             while (rs.next()) {
                 posts.add(new Post(

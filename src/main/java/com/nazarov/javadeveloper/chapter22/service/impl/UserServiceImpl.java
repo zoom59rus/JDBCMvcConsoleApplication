@@ -105,11 +105,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public void remove(Long id) {
         Writer writer = writerRepository.get(id);
-        List<Post> posts = postRepository.getAllByWriterId(writer.getId());
-        posts = posts.stream()
-                .peek(p -> postRepository.remove(p.getId()))
-                .collect(Collectors.toList());
-
-        writerRepository.remove(id);
+        if(writer != null){
+            writerRepository.remove(id);
+        }
     }
 }

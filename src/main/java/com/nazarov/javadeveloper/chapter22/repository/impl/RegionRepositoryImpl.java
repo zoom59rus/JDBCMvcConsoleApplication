@@ -2,8 +2,8 @@ package com.nazarov.javadeveloper.chapter22.repository.impl;
 
 import com.nazarov.javadeveloper.chapter22.ObjectFactory;
 import com.nazarov.javadeveloper.chapter22.entity.Region;
+import com.nazarov.javadeveloper.chapter22.repository.DBUtils;
 import com.nazarov.javadeveloper.chapter22.repository.RegionRepository;
-import com.nazarov.javadeveloper.chapter22.service.queries.RegionQueries;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +26,7 @@ public class RegionRepositoryImpl implements RegionRepository {
                         .createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)
         ) {
             int row = stmt.executeUpdate(
-                    String.format(RegionQueries.SAVE, entity.getName()),
+                    String.format(DBUtils.SAVE_REGION, entity.getName()),
                             Statement.RETURN_GENERATED_KEYS
             );
             if (row == 0) {
@@ -57,7 +57,7 @@ public class RegionRepositoryImpl implements RegionRepository {
                 Statement st = ObjectFactory.getInstance()
                         .getConnection()
                         .createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-                ResultSet rs = st.executeQuery(String.format(RegionQueries.GET_BY_ID, id))
+                ResultSet rs = st.executeQuery(String.format(DBUtils.GET_REGION_BY_ID, id))
 
         ) {
             while (rs.next()) {
@@ -78,7 +78,7 @@ public class RegionRepositoryImpl implements RegionRepository {
                 Statement st = ObjectFactory.getInstance()
                         .getConnection()
                         .createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-                ResultSet rs = st.executeQuery(String.format(RegionQueries.GET_BY_NAME, name))
+                ResultSet rs = st.executeQuery(String.format(DBUtils.GET_REGION_BY_NAME, name))
         ) {
             if (rs.next()) {
                 find = new Region(rs.getLong("id"),
@@ -99,7 +99,7 @@ public class RegionRepositoryImpl implements RegionRepository {
                         .getConnection()
                         .createStatement()
         ) {
-            int isUpdated = st.executeUpdate(String.format(RegionQueries.UPDATE, region.getName(), region.getId()));
+            int isUpdated = st.executeUpdate(String.format(DBUtils.UPDATE_REGION, region.getName(), region.getId()));
             if (isUpdated == 1) {
                 log.info("IN - Regions(update) - Запись обновлена на " + region);
                 return region;
@@ -120,7 +120,7 @@ public class RegionRepositoryImpl implements RegionRepository {
                         .getConnection()
                         .createStatement()
         ) {
-            st.execute(String.format(RegionQueries.DELETE, id));
+            st.execute(String.format(DBUtils.DELETE_REGION, id));
         } catch (SQLException e) {
             log.error("IN - Regions(remove) - " + e.getMessage());
         }

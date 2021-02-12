@@ -4,8 +4,8 @@ import com.nazarov.javadeveloper.chapter22.ObjectFactory;
 import com.nazarov.javadeveloper.chapter22.entity.Post;
 import com.nazarov.javadeveloper.chapter22.entity.Region;
 import com.nazarov.javadeveloper.chapter22.entity.Writer;
+import com.nazarov.javadeveloper.chapter22.repository.DBUtils;
 import com.nazarov.javadeveloper.chapter22.repository.WriterRepository;
-import com.nazarov.javadeveloper.chapter22.service.queries.WriterQueries;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +27,7 @@ public class WriterRepositoryImpl implements WriterRepository {
                         .getConnection()
                         .createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)
         ) {
-            int affect = st.executeUpdate(String.format(WriterQueries.SAVE, writer.getRegions_id(), writer.getFirstName(), writer.getLastName()),
+            int affect = st.executeUpdate(String.format(DBUtils.SAVE_WRITER, writer.getRegions_id(), writer.getFirstName(), writer.getLastName()),
                                         Statement.RETURN_GENERATED_KEYS);
             if (affect == 0) {
                 log.warn("IN save - Запись " + writer + " не сохранена.");
@@ -51,22 +51,22 @@ public class WriterRepositoryImpl implements WriterRepository {
 
     @Override
     public Writer get(Long id) {
-        return executeQuery(WriterQueries.GET_BY_ID, id.toString());
+        return executeQuery(DBUtils.GET_WRITER_BY_ID, id.toString());
     }
 
     @Override
     public Writer getByFirstName(String firstName) {
-        return executeQuery(WriterQueries.GET_BY_FIRST_NAME, firstName);
+        return executeQuery(DBUtils.GET_WRITER_BY_FIRST_NAME, firstName);
     }
 
     @Override
     public Writer getByLastName(String lastName) {
-        return executeQuery(WriterQueries.GET_BY_LAST_NAME, lastName);
+        return executeQuery(DBUtils.GET_WRITER_BY_LAST_NAME, lastName);
     }
 
     @Override
     public Writer getByRegion(Long regionId) {
-        return executeQuery(WriterQueries.GET_BY_REGION_NAME, regionId.toString());
+        return executeQuery(DBUtils.GET_WRITER_BY_REGION_ID, regionId.toString());
     }
 
     @Override
@@ -77,7 +77,7 @@ public class WriterRepositoryImpl implements WriterRepository {
                         .createStatement()
         ) {
             int affected = st.executeUpdate(
-                    String.format(WriterQueries.UPDATE, writer.getRegions_id(),
+                    String.format(DBUtils.UPDATE_WRITER, writer.getRegions_id(),
                                                         writer.getFirstName(),
                                                         writer.getLastName(),
                                                         writer.getId())
@@ -106,7 +106,7 @@ public class WriterRepositoryImpl implements WriterRepository {
                         .getConnection()
                         .createStatement()
         ) {
-            st.execute(String.format(WriterQueries.DELETE, id));
+            st.execute(String.format(DBUtils.DELETE_WRITER, id));
         } catch (SQLException e) {
             e.printStackTrace();
         }
