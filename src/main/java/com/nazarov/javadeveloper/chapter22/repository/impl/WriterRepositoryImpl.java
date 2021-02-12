@@ -5,7 +5,6 @@ import com.nazarov.javadeveloper.chapter22.entity.Region;
 import com.nazarov.javadeveloper.chapter22.entity.Writer;
 import com.nazarov.javadeveloper.chapter22.repository.DBUtils;
 import com.nazarov.javadeveloper.chapter22.repository.WriterRepository;
-import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +14,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-@NoArgsConstructor
 public class WriterRepositoryImpl implements WriterRepository {
     private final Logger log = LoggerFactory.getLogger("WriterRepositoryImpl");
 

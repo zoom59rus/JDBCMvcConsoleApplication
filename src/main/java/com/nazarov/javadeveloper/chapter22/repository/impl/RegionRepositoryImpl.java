@@ -3,13 +3,11 @@ package com.nazarov.javadeveloper.chapter22.repository.impl;
 import com.nazarov.javadeveloper.chapter22.entity.Region;
 import com.nazarov.javadeveloper.chapter22.repository.DBUtils;
 import com.nazarov.javadeveloper.chapter22.repository.RegionRepository;
-import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 
-@NoArgsConstructor
 public class RegionRepositoryImpl implements RegionRepository {
     private final Logger log = LoggerFactory.getLogger("RegionRepositoryImpl");
 

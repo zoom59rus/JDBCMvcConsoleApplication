@@ -3,7 +3,6 @@ package com.nazarov.javadeveloper.chapter22.repository.impl;
 import com.nazarov.javadeveloper.chapter22.entity.Post;
 import com.nazarov.javadeveloper.chapter22.repository.DBUtils;
 import com.nazarov.javadeveloper.chapter22.repository.PostRepository;
-import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,7 +10,6 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@NoArgsConstructor
 public class PostRepositoryImpl implements PostRepository {
     private final Logger log = LoggerFactory.getLogger("PostRepositoryImpl");
 
