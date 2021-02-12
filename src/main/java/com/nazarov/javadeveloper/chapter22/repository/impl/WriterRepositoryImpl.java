@@ -1,29 +1,34 @@
 package com.nazarov.javadeveloper.chapter22.repository.impl;
 
 import com.nazarov.javadeveloper.chapter22.ObjectFactory;
+import com.nazarov.javadeveloper.chapter22.entity.Post;
+import com.nazarov.javadeveloper.chapter22.entity.Region;
 import com.nazarov.javadeveloper.chapter22.entity.Writer;
 import com.nazarov.javadeveloper.chapter22.repository.WriterRepository;
+import com.nazarov.javadeveloper.chapter22.service.queries.WriterQueries;
+import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
+@NoArgsConstructor
 public class WriterRepositoryImpl implements WriterRepository {
     private final Logger log = LoggerFactory.getLogger("WriterRepositoryImpl");
-    private final Connection conn;
-
-    public WriterRepositoryImpl() {
-        this.conn = ObjectFactory.getInstance().getConnection();
-    }
 
     @Override
     public Writer save(Writer writer) {
-        String sqlQuery = String.format("INSERT INTO writers(id, regions_id, first_name, last_name) VALUES(null, '%d', '%s', '%s')", writer.getRegions_id(), writer.getFirstName(), writer.getLastName());
-        try (Statement st = conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
-            int affect = st.executeUpdate(sqlQuery, Statement.RETURN_GENERATED_KEYS);
+        try (
+                Statement st = ObjectFactory.getInstance()
+                        .getConnection()
+                        .createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)
+        ) {
+            int affect = st.executeUpdate(String.format(WriterQueries.SAVE, writer.getRegions_id(), writer.getFirstName(), writer.getLastName()),
+                                        Statement.RETURN_GENERATED_KEYS);
             if (affect == 0) {
                 log.warn("IN save - Запись " + writer + " не сохранена.");
                 return null;
@@ -46,36 +51,38 @@ public class WriterRepositoryImpl implements WriterRepository {
 
     @Override
     public Writer get(Long id) {
-        String sqlQuery = String.format("Select * From writers Where id=%d", id);
-        return executeQuery(sqlQuery);
+        return executeQuery(WriterQueries.GET_BY_ID, id.toString());
     }
 
     @Override
     public Writer getByFirstName(String firstName) {
-        String sqlQuery = String.format("Select * From writers Where first_name='%s'", firstName);
-        return executeQuery(sqlQuery);
-
+        return executeQuery(WriterQueries.GET_BY_FIRST_NAME, firstName);
     }
 
     @Override
     public Writer getByLastName(String lastName) {
-        String sqlQuery = String.format("Select * From writers Where last_name='%s'", lastName);
-        return executeQuery(sqlQuery);
-
+        return executeQuery(WriterQueries.GET_BY_LAST_NAME, lastName);
     }
 
     @Override
     public Writer getByRegion(Long regionId) {
-        String sqlQuery = String.format("Select * From writers Where regions_id=%d", regionId);
-        return executeQuery(sqlQuery);
+        return executeQuery(WriterQueries.GET_BY_REGION_NAME, regionId.toString());
     }
 
     @Override
     public Writer update(Writer writer) {
-        String sqlQuery = String.format("Update writers Set regions_id=%d, first_name='%s', last_name='%s' Where id=%d",
-                writer.getRegions_id(), writer.getFirstName(), writer.getLastName(), writer.getId());
-        try (Statement st = conn.createStatement()) {
-            int affected = st.executeUpdate(sqlQuery);
+        try (
+                Statement st = ObjectFactory.getInstance()
+                        .getConnection()
+                        .createStatement()
+        ) {
+            int affected = st.executeUpdate(
+                    String.format(WriterQueries.UPDATE, writer.getRegions_id(),
+                                                        writer.getFirstName(),
+                                                        writer.getLastName(),
+                                                        writer.getId())
+            );
+
             if (affected == 0) {
                 log.warn("IN update - Не удалось обновить запись  " + writer + ".");
                 return null;
@@ -94,25 +101,54 @@ public class WriterRepositoryImpl implements WriterRepository {
 
     @Override
     public void remove(Long id) {
-        String sqlQuery = String.format("Delete From writers Where id=%d", id);
-        try (Statement st = conn.createStatement()) {
-            st.execute(sqlQuery);
+        try (
+                Statement st = ObjectFactory.getInstance()
+                        .getConnection()
+                        .createStatement()
+        ) {
+            st.execute(String.format(WriterQueries.DELETE, id));
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    private Writer executeQuery(String sqlQuery) {
-        try (Statement st = conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-             ResultSet rs = st.executeQuery(sqlQuery)
+    private Writer executeQuery(String sqlQuery, String param) {
+        try (
+                Statement st = ObjectFactory.getInstance()
+                        .getConnection()
+                        .createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+                ResultSet rs = st.executeQuery(sqlQuery + "\'" + param + "\'")
         ) {
             if (rs.next()) {
-                return new Writer(
-                        rs.getLong("id"),
-                        rs.getLong("regions_id"),
-                        rs.getString("first_name"),
-                        rs.getString("last_name")
-                );
+                Writer writer = new Writer();
+                List<Post> posts = new ArrayList<>();
+
+                writer.setId(rs.getLong("id"));
+                writer.setRegions_id(rs.getLong("regions_id"));
+                writer.setFirstName(rs.getString("first_name"));
+                writer.setLastName(rs.getString("last_name"));
+                writer.setRegion(new Region(
+                        writer.getRegions_id(),
+                        rs.getString("regionName")
+                ));
+                posts.add(new Post(
+                        rs.getLong("postId"),
+                        writer.getId(),
+                        rs.getString("content"),
+                        rs.getTimestamp("create"),
+                        rs.getTimestamp("upgrade")
+                ));
+                while (rs.next()) {
+                    posts.add(new Post(
+                            rs.getLong("postId"),
+                            writer.getId(),
+                            rs.getString("content"),
+                            rs.getTimestamp("create"),
+                            rs.getTimestamp("upgrade")
+                    ));
+                }
+                writer.setPosts(posts);
+                return writer;
             }
         } catch (SQLException e) {
             e.printStackTrace();

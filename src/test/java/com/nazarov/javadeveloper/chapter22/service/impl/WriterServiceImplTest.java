@@ -1,6 +1,9 @@
 package com.nazarov.javadeveloper.chapter22.service.impl;
 
+import com.nazarov.javadeveloper.chapter22.entity.Post;
+import com.nazarov.javadeveloper.chapter22.entity.Region;
 import com.nazarov.javadeveloper.chapter22.entity.Writer;
+import liquibase.pro.packaged.D;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,6 +12,10 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,7 +37,10 @@ class WriterServiceImplTest {
 
         assertNotNull(find);
         assertEquals(2L, find.getId());
+        assertNotNull(find.getPosts());
+        assertNotNull(find.getRegion());
         Mockito.verify(writerService, Mockito.times(1)).get(Mockito.anyLong());
+        System.out.println(find);
     }
 
     @Test
@@ -39,7 +49,10 @@ class WriterServiceImplTest {
 
         assertNotNull(find);
         assertEquals("Anton", find.getFirstName());
+        assertNotNull(find.getPosts());
+        assertNotNull(find.getRegion());
         Mockito.verify(writerService, Mockito.times(1)).getByFirstName(Mockito.anyString());
+        System.out.println(find);
     }
 
     @Test
@@ -48,7 +61,10 @@ class WriterServiceImplTest {
 
         assertNotNull(find);
         assertEquals("Nazarov", find.getLastName());
+        assertNotNull(find.getPosts());
+        assertNotNull(find.getRegion());
         Mockito.verify(writerService, Mockito.times(1)).getByLastName(Mockito.anyString());
+        System.out.println(find);
     }
 
     @Test
@@ -57,7 +73,10 @@ class WriterServiceImplTest {
 
         assertNotNull(find);
         assertEquals(2L, find.getRegions_id());
+        assertNotNull(find.getPosts());
+        assertNotNull(find.getRegion());
         Mockito.verify(writerService, Mockito.times(1)).getByRegion(Mockito.anyLong());
+        System.out.println(find);
     }
 
     @Test
@@ -81,14 +100,16 @@ class WriterServiceImplTest {
         assertNotNull(updatedWriter);
         assertEquals(5L, updatedWriter.getId());
         assertEquals(5L, updatedWriter.getRegions_id());
-        assertEquals("Test", updatedWriter.getFirstName());
+        assertEquals("Goodtest", updatedWriter.getFirstName());
         assertEquals("root", updatedWriter.getLastName());
         Mockito.verify(writerService, Mockito.times(2)).update(Mockito.any(Writer.class));
     }
 
     @Test
     void save_some_writer() {
-        Writer writer = new Writer(null, 9L, "Gulia", "Briks");
+        List<Post> posts = new ArrayList<>();
+        posts.add(new Post(null, null, "Post Test", new Date(), null));
+        Writer writer = new Writer(null, 9L, "Gulia", "Briks", posts, new Region(2L, "Permsky kray"));
         writer = writerService.save(writer);
 
         assertNotNull(writer);
@@ -101,7 +122,7 @@ class WriterServiceImplTest {
 
     @Test
     void remove() {
-        Writer writer = new Writer(12L, 9L, "Gulia", "Briks");
+        Writer writer = new Writer(12L, 9L, "Gulia", "Briks", null, null);
         writerService.remove(writer);
         Writer find = writerService.get(12L);
 

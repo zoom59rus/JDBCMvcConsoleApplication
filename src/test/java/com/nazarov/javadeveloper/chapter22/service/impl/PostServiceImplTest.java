@@ -35,10 +35,10 @@ class PostServiceImplTest {
 
     @Test
     void get_by_content() {
-        Post post = postService.get("Post #5");
+        Post post = postService.get("Post #55");
 
         assertNotNull(post);
-        assertEquals("Post #5", post.getContent());
+        assertEquals("Post #55", post.getContent());
         Mockito.verify(postService, Mockito.times(1)).get(Mockito.anyString());
 
         post = postService.get("fffff");
@@ -75,7 +75,6 @@ class PostServiceImplTest {
         updatablePost.setContent(oldContent);
         postService.update(updatablePost);
         Mockito.verify(postService, Mockito.times(2)).update(Mockito.any(Post.class));
-
     }
 
     @Test

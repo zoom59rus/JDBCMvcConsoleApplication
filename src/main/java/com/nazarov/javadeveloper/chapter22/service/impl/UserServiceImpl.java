@@ -28,7 +28,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public WriterDto save(WriterDto writerDto) {
-        Writer writer = new Writer();
+        Writer writer = WriterDto.fromWriterDto(writerDto);
         Region region = writerDto.getRegion();
         List<Post> posts = writerDto.getPosts();
 
@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserService {
         Region region = regionRepository.get(writer.getRegions_id());
         List<Post> posts = postRepository.getAllByWriterId(writer.getId());
 
-        return WriterDto.fromWriter(writer, posts, region);
+        return WriterDto.fromWriter(writer);
     }
 
     public WriterDto getByFirstName(String firstName) {
@@ -86,7 +86,7 @@ public class UserServiceImpl implements UserService {
             Region region = regionRepository.get(writer.getRegions_id());
             List<Post> posts = postRepository.getAllByWriterId(writer.getId());
 
-            return WriterDto.fromWriter(writer, posts, region);
+            return WriterDto.fromWriter(writer);
         }
     }
 
@@ -98,7 +98,7 @@ public class UserServiceImpl implements UserService {
             Region region = regionRepository.get(writer.getRegions_id());
             List<Post> posts = postRepository.getAllByWriterId(writer.getId());
 
-            return WriterDto.fromWriter(writer, posts, region);
+            return WriterDto.fromWriter(writer);
         }
     }
 

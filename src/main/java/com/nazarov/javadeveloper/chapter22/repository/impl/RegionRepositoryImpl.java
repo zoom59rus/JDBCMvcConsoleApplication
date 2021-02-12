@@ -3,33 +3,45 @@ package com.nazarov.javadeveloper.chapter22.repository.impl;
 import com.nazarov.javadeveloper.chapter22.ObjectFactory;
 import com.nazarov.javadeveloper.chapter22.entity.Region;
 import com.nazarov.javadeveloper.chapter22.repository.RegionRepository;
+import com.nazarov.javadeveloper.chapter22.service.queries.RegionQueries;
+import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 
+@NoArgsConstructor
 public class RegionRepositoryImpl implements RegionRepository {
     private final Logger log = LoggerFactory.getLogger("RegionRepositoryImpl");
-    private final Connection conn;
-
-    public RegionRepositoryImpl() {
-        this.conn = ObjectFactory.getInstance().getConnection();
-    }
 
     public Region save(Region entity) {
-        String sqlQuery = String.format("INSERT regions VALUES(null, '%s')", entity.getName());
         Region region = get(entity.getName());
-        if(region != null){
+        if (region != null) {
             return region;
         }
 
-        try (PreparedStatement stmt = conn.prepareStatement(sqlQuery, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.executeUpdate();
+        try (
+                Statement stmt = ObjectFactory.getInstance()
+                        .getConnection()
+                        .createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)
+        ) {
+            int row = stmt.executeUpdate(
+                    String.format(RegionQueries.SAVE, entity.getName()),
+                            Statement.RETURN_GENERATED_KEYS
+            );
+            if (row == 0) {
+                log.warn("IN save - Запись " + entity + " не сохранена.");
+                return null;
+            }
+            if (row > 1) {
+                log.warn("IN save - Сохранение " + entity + " затронуло другие записи.");
+            }
             try (ResultSet rs = stmt.getGeneratedKeys()) {
                 if (rs.next()) {
                     entity.setId(rs.getLong(1));
                     log.info("IN - save - Добавлена новая запись " + entity);
-                } else throw new SQLException("Сохранение прошло успешно, но не удалось получить id для записи " + entity);
+                } else
+                    throw new SQLException("Сохранение прошло успешно, но не удалось получить id для записи " + entity);
             }
         } catch (SQLException e) {
             log.warn("IN - save - " + e.getMessage());
@@ -39,15 +51,18 @@ public class RegionRepositoryImpl implements RegionRepository {
     }
 
     public Region get(Long id) {
-        String sqlQuery = String.format("SELECT `id`, `name` FROM regions WHERE id=%d", id);
         Region find = null;
 
-        try(Statement st = conn.createStatement()){
-            st.execute(sqlQuery);
-            try (ResultSet rs = st.getResultSet()){
-                while (rs.next()){
-                    find = new Region(rs.getLong("id"), rs.getString("name"));
-                }
+        try (
+                Statement st = ObjectFactory.getInstance()
+                        .getConnection()
+                        .createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+                ResultSet rs = st.executeQuery(String.format(RegionQueries.GET_BY_ID, id))
+
+        ) {
+            while (rs.next()) {
+                find = new Region(rs.getLong("id"),
+                        rs.getString("name"));
             }
         } catch (SQLException e) {
             log.warn("IN - Region(get) - " + e.getMessage());
@@ -56,33 +71,39 @@ public class RegionRepositoryImpl implements RegionRepository {
         return find;
     }
 
-    public Region get(String name){
-        String sqlQuery = String.format("Select * From regions Where name='%s'", name);
-        try(Statement st = conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-            ResultSet rs = st.executeQuery(sqlQuery);
-        ){
-            if(rs.next()){
-                Region region = new Region(rs.getLong("id"),
-                                            rs.getString("name"));
-                return region;
+    public Region get(String name) {
+        Region find = null;
+
+        try (
+                Statement st = ObjectFactory.getInstance()
+                        .getConnection()
+                        .createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+                ResultSet rs = st.executeQuery(String.format(RegionQueries.GET_BY_NAME, name))
+        ) {
+            if (rs.next()) {
+                find = new Region(rs.getLong("id"),
+                        rs.getString("name"));
+                return find;
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        return null;
+        return find;
     }
 
     @Override
     public Region update(Region region) {
-        String sqlQuery = String.format("UPDATE `regions` SET name='%s' WHERE id='%d'", region.getName(), region.getId());
-
-        try(Statement st = conn.createStatement()){
-            int isUpdated = st.executeUpdate(sqlQuery);
-            if(isUpdated == 1){
+        try (
+                Statement st = ObjectFactory.getInstance()
+                        .getConnection()
+                        .createStatement()
+        ) {
+            int isUpdated = st.executeUpdate(String.format(RegionQueries.UPDATE, region.getName(), region.getId()));
+            if (isUpdated == 1) {
                 log.info("IN - Regions(update) - Запись обновлена на " + region);
                 return region;
-            }else {
+            } else {
                 log.warn("Запись " + region + " не обновлена.");
             }
         } catch (SQLException e) {
@@ -94,13 +115,14 @@ public class RegionRepositoryImpl implements RegionRepository {
 
     @Override
     public void remove(Long id) {
-        String sqlQuery = String.format("DELETE FROM regions WHERE id=%d", id);
-
-        try(Statement st = conn.createStatement()){
-            st.execute(sqlQuery);
+        try (
+                Statement st = ObjectFactory.getInstance()
+                        .getConnection()
+                        .createStatement()
+        ) {
+            st.execute(String.format(RegionQueries.DELETE, id));
         } catch (SQLException e) {
             log.error("IN - Regions(remove) - " + e.getMessage());
         }
-
     }
 }
