@@ -1,6 +1,5 @@
 package com.nazarov.javadeveloper.chapter22.repository.impl;
 
-import com.nazarov.javadeveloper.chapter22.ObjectFactory;
 import com.nazarov.javadeveloper.chapter22.entity.Region;
 import com.nazarov.javadeveloper.chapter22.repository.DBUtils;
 import com.nazarov.javadeveloper.chapter22.repository.RegionRepository;
