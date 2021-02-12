@@ -1,6 +1,12 @@
 package com.nazarov.javadeveloper.chapter22.repository;
 
+import com.nazarov.javadeveloper.chapter22.ObjectFactory;
+
+import java.sql.SQLException;
+import java.sql.Statement;
+
 public class DBUtils {
+
     public static String GET_REGION_BY_ID = "SELECT `id`, `name` FROM regions WHERE id=%d";
 
     public static String GET_REGION_BY_NAME = "SELECT `id`, `name` FROM regions WHERE name='%s'";
@@ -46,4 +52,10 @@ public class DBUtils {
     public static String DELETE_WRITER = "DELETE FROM writers WHERE id=%d";
 
     public static String SAVE_WRITER = "INSERT INTO writers VALUES(null, '%d', '%s', '%s')";
+
+
+    public static Statement getStatement() throws SQLException {
+        return ObjectFactory.getInstance()
+                .getStatement();
+    }
 }

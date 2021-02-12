@@ -20,14 +20,10 @@ public class RegionRepositoryImpl implements RegionRepository {
             return region;
         }
 
-        try (
-                Statement stmt = ObjectFactory.getInstance()
-                        .getConnection()
-                        .createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)
-        ) {
+        try (Statement stmt = DBUtils.getStatement()) {
             int row = stmt.executeUpdate(
                     String.format(DBUtils.SAVE_REGION, entity.getName()),
-                            Statement.RETURN_GENERATED_KEYS
+                    Statement.RETURN_GENERATED_KEYS
             );
             if (row == 0) {
                 log.warn("IN save - Запись " + entity + " не сохранена.");
@@ -54,11 +50,8 @@ public class RegionRepositoryImpl implements RegionRepository {
         Region find = null;
 
         try (
-                Statement st = ObjectFactory.getInstance()
-                        .getConnection()
-                        .createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+                Statement st = DBUtils.getStatement();
                 ResultSet rs = st.executeQuery(String.format(DBUtils.GET_REGION_BY_ID, id))
-
         ) {
             while (rs.next()) {
                 find = new Region(rs.getLong("id"),
@@ -75,9 +68,7 @@ public class RegionRepositoryImpl implements RegionRepository {
         Region find = null;
 
         try (
-                Statement st = ObjectFactory.getInstance()
-                        .getConnection()
-                        .createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+                Statement st = DBUtils.getStatement();
                 ResultSet rs = st.executeQuery(String.format(DBUtils.GET_REGION_BY_NAME, name))
         ) {
             if (rs.next()) {
@@ -94,11 +85,7 @@ public class RegionRepositoryImpl implements RegionRepository {
 
     @Override
     public Region update(Region region) {
-        try (
-                Statement st = ObjectFactory.getInstance()
-                        .getConnection()
-                        .createStatement()
-        ) {
+        try (Statement st = DBUtils.getStatement()) {
             int isUpdated = st.executeUpdate(String.format(DBUtils.UPDATE_REGION, region.getName(), region.getId()));
             if (isUpdated == 1) {
                 log.info("IN - Regions(update) - Запись обновлена на " + region);
@@ -115,11 +102,7 @@ public class RegionRepositoryImpl implements RegionRepository {
 
     @Override
     public void remove(Long id) {
-        try (
-                Statement st = ObjectFactory.getInstance()
-                        .getConnection()
-                        .createStatement()
-        ) {
+        try (Statement st = DBUtils.getStatement()) {
             st.execute(String.format(DBUtils.DELETE_REGION, id));
         } catch (SQLException e) {
             log.error("IN - Regions(remove) - " + e.getMessage());

@@ -22,11 +22,7 @@ public class WriterRepositoryImpl implements WriterRepository {
 
     @Override
     public Writer save(Writer writer) {
-        try (
-                Statement st = ObjectFactory.getInstance()
-                        .getConnection()
-                        .createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)
-        ) {
+        try (Statement st = DBUtils.getStatement()) {
             int affect = st.executeUpdate(String.format(DBUtils.SAVE_WRITER, writer.getRegions_id(), writer.getFirstName(), writer.getLastName()),
                                         Statement.RETURN_GENERATED_KEYS);
             if (affect == 0) {
@@ -71,11 +67,8 @@ public class WriterRepositoryImpl implements WriterRepository {
 
     @Override
     public Writer update(Writer writer) {
-        try (
-                Statement st = ObjectFactory.getInstance()
-                        .getConnection()
-                        .createStatement()
-        ) {
+        try (Statement st = DBUtils.getStatement()) {
+
             int affected = st.executeUpdate(
                     String.format(DBUtils.UPDATE_WRITER, writer.getRegions_id(),
                                                         writer.getFirstName(),
@@ -101,11 +94,7 @@ public class WriterRepositoryImpl implements WriterRepository {
 
     @Override
     public void remove(Long id) {
-        try (
-                Statement st = ObjectFactory.getInstance()
-                        .getConnection()
-                        .createStatement()
-        ) {
+        try (Statement st = DBUtils.getStatement()) {
             st.execute(String.format(DBUtils.DELETE_WRITER, id));
         } catch (SQLException e) {
             e.printStackTrace();
@@ -114,9 +103,7 @@ public class WriterRepositoryImpl implements WriterRepository {
 
     private Writer executeQuery(String sqlQuery, String param) {
         try (
-                Statement st = ObjectFactory.getInstance()
-                        .getConnection()
-                        .createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+                Statement st = DBUtils.getStatement();
                 ResultSet rs = st.executeQuery(sqlQuery + "\'" + param + "\'")
         ) {
             if (rs.next()) {

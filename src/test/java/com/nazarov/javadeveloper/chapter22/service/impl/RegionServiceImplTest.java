@@ -27,6 +27,7 @@ class RegionServiceImplTest {
 
         assertNotNull(region);
         assertEquals(2L, region.getId());
+        assertNotNull(region.getName());
         Mockito.verify(regionService, Mockito.times(1)).get(Mockito.anyLong());
     }
 

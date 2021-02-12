@@ -73,10 +73,10 @@ class UserServiceImplTest {
 
     @Test
     void get_some_writerDto_by_id() {
-        WriterDto find = userService.get(13L);
+        WriterDto find = userService.get(2L);
 
         assertNotNull(find);
-        assertEquals(13L, find.getId());
+        assertEquals(2L, find.getId());
         Mockito.verify(userService, Mockito.times(1)).get(Mockito.anyLong());
     }
 
